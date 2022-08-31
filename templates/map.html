@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- setting title -->
+
+    <title>Chennai Flood Monitoring App</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!------------------------------------------------------ calling style sheets ------------------------------------------------------------->
+    <link href="{{url_for('static', filename = 'leaflet.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename = 'bootstrap.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename = 'L.Control.Pan.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename = 'L.Control.MousePosition.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename = 'L.Control.Sidebar.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename = 'Leaflet.PolylineMeasure.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename = 'easy-button.css')}}" rel="stylesheet">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet" />
+    <link href="{{url_for('static', filename = 'leaflet-opencage/src/css/L.Control.OpenCageSearch.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename = 'L.Control.Locate.min.css')}}" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.2/dist/leaflet.draw-src.css" />
+
+
+    <!------------------------------------------------------------- calling scripts --------------------------------------------------->
+
+    <script src="{{url_for('static', filename = 'leaflet-src.js')}}"></script>
+    <script src="{{url_for('static', filename = 'jquery-3.2.0.min.js')}}"></script>
+    <script src="{{url_for('static', filename = 'L.Control.Pan.js')}}"></script>
+    <script src="{{url_for('static', filename = 'L.Control.MousePosition.js')}}"></script>
+    <script src="{{url_for('static', filename = 'L.Control.Sidebar.js')}}"></script>
+    <script type="text/javascript" src="https://rawgit.com/CliffCloud/Leaflet.EasyButton/master/src/easy-button.js"></script>
+    <script src="{{url_for('static', filename = 'leaflet-providers.js')}}"></script>
+    <script src="{{url_for('static', filename = 'leaflet-opencage/src/js/L.Control.OpenCageSearch.js')}}"></script>
+    <script src="{{url_for('static', filename = 'L.Control.Locate.js')}}"></script>
+    <script src="{{url_for('static', filename = 'leaflet.draw.js')}}"></script>
+    <script src="{{url_for('static', filename = 'water.json')}}"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.2/dist/leaflet.draw-src.js"></script>
+    <script src=" https://cdnjs.cloudflare.com/ajax/libs/leaflet-ajax/2.1.0/leaflet.ajax.min.js"></script>
+
+
+    <!-------------------------------------------- setting style for map and sidebar ----------------------------------------->
+
+
+    <style>
+        label {
+            width: 200px;
+            display: inline-block;
+        }
+        
+        button {
+            float: right;
+            margin: 0;
+        }
+        
+        #title {
+            text-align: center;
+            max-height: 40px;
+        }
+        
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        
+        html,
+        body,
+        #mapdiv {
+            height: 98%;
+            width: 100%;
+        }
+        
+        body {
+            color: #6a6c6f;
+            background-color: #f1f3f6;
+            margin-top: 0px;
+        }
+        
+        .container {
+            max-width: 960px;
+        }
+        /* */
+        
+        .btn-text-center {
+            text-align: left;
+            justify-content: center;
+        }
+        
+        .panel-default>.panel-heading {
+            color: #333;
+            background-color: #fff;
+            border-color: #e4e5e7;
+            padding: 0;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        .panel-default>.panel-heading a {
+            display: block;
+            padding: 10px 15px;
+        }
+        
+        .panel-default>.panel-heading a:after {
+            content: "";
+            position: relative;
+            top: 1px;
+            display: inline-block;
+            font-family: 'Glyphicons Halflings';
+            font-style: normal;
+            font-weight: 400;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            float: right;
+            transition: transform .25s linear;
+            -webkit-transition: -webkit-transform .25s linear;
+        }
+        
+        .panel-default>.panel-heading a[aria-expanded="true"] {
+            background-color: #eee;
+        }
+        
+        .panel-default>.panel-heading a[aria-expanded="true"]:after {
+            content: "\2212";
+            -webkit-transform: rotate(180deg);
+            transform: rotate(180deg);
+        }
+        
+        .panel-default>.panel-heading a[aria-expanded="false"]:after {
+            content: "\002b";
+            -webkit-transform: rotate(90deg);
+            transform: rotate(90deg);
+        }
+        
+        @media (max-width: 991px) {
+            .leaflet-sidebar {
+                width: 60%;
+                padding: 0;
+            }
+            .leaflet-sidebar.left.visible~.leaflet-left {
+                left: 60%;
+            }
+            .leaflet-sidebar.right.visible~.leaflet-right {
+                right: 30%;
+            }
+            .leaflet-sidebar.left {
+                left: -100%;
+            }
+            .leaflet-sidebar.left.visible {
+                left: 0;
+            }
+            .leaflet-sidebar.right {
+                right: -0%;
+            }
+            .leaflet-sidebar.right.visible {
+                right: 0;
+            }
+            .leaflet-sidebar>.leaflet-control {
+                box-shadow: none;
+                -webkit-border-radius: 0;
+                border-radius: 0;
+            }
+            .leaflet-touch .leaflet-sidebar>.leaflet-control {
+                border: 0;
+            }
+            .ctlEasybutton {
+                right: -30%
+            }
+        }
+        
+        @media (min-width: 992px) {
+            .leaflet-sidebar {
+                width: 500px;
+            }
+            .leaflet-sidebar.left.visible~.leaflet-left {
+                left: 500px;
+            }
+            .leaflet-sidebar.right.visible~.leaflet-right {
+                right: 500px;
+            }
+        }
+    </style>
+</head>
+
+<!-- starting the body  -->
+
+
+<body>
+    <!-- Adding Title -->
+    <div id='title'>
+        <h2> Chennai Flood Monitoring App</h2>
+    </div>
+
+    <!-- configuring the sidebar   -->
+    <div id="side-bar" class="col-md-3">
+
+        <!-- text explaining the web application -->
+
+        <h3>About the Application</h3>
+
+        <p> This application records Pluvial Flooding in Chennai using Volunteered Geographical Information obtained via user input. After submitting your point, the application will return a Flood Fill & Flood History of the point on the webmap. <br> Submit
+            a flooded area using the point icon on the right hand side of the map. Once you have added a point, describe the flooding in your area in the box below and click on Submit!
+            <br> Please note that flooding here is not indicative of actual flooding and flood risk.It is a very simple algorithm that determines potential flooding using a Digital Elevation Model (DEM).Multiple more factors are involved in actual flooding
+            scenarios. <br> This project is being designed for a dissertation for a Msc in GIS at University of Manchester (2021-2022). Report false points to chennaifloodmonitoringapp@proton.me or +919840455734 (Whatsapp)
+        </p>
+        <!-- warning to users -->
+
+        <p align=justify style="background-color:#5b7ff594;
+            border-radius:4px;
+            font-size:14px;
+            padding:15px;
+            margin:5px;"> Please note that flooding here is not indicative of actual flooding and flood risk. <br> Please contact local Government Authorities or emergency <br>for immedate assistance: <br> police- 100, fire department-101<br> Disaster Management-108 or
+            ambulance-102
+            </button>
+
+        </p>
+
+        <!-- getting user inputs - longitude, latitude, flood depth and a description of the event-->
+        <h3>Submit User Input</h3>
+
+        <!-- getting inputs - longitude, latitude, flood depth and a description of the event via forms-->
+        <!-- longitude, latitude below are mapped to the lat long of points added to the leaflet map (function in leaflet map div)-->
+
+        <label for="flood depth">Flood Depth (m):</label><input id="insert_depth" type="text" />
+        <label for="description">Description:</label><input id="description" type="text" />
+        <label for="longitude">Longitude:</label><input id="insert_longitude" type="text" />
+        <label for="latitude">Latitude:</label><input id="insert_latitude" type="text" />
+        <br>
+
+        <!-- on the click of the button below, users can call the '/insert' flask route using the makerequest function ( initialised below)-->
+        <button onclick="makeRequest('./insert?lng=' + document.getElementById('insert_longitude').value.toString() + 
+        '&lat=' + document.getElementById('insert_latitude').value.toString() + '&flood depth=' + document.getElementById('insert_depth').value.toString() + '&description=' + document.getElementById('description').value.toString(),
+        loadInsertResponse)">Submit</button> <br>
+
+        <!-- getting input once the user clicks the insert button -->
+
+
+
+        <!-- Query if a point is available in the database -->
+        <hr>
+        <h3> Query Submitted point</h3>
+
+        <label for="longitude">Longitude:</label><input id="longitude" type="text" value="80.25890350341798" />
+        <label for="latitude">Latitude:</label><input id="latitude" type="text" value="13.05783173219398" />
+
+        <!-- on the click of the button below, users can call the '/select' flask route using the makerequest function ( initialised below)-->
+        <button onclick="makeRequest('./select?lng=' + document.getElementById('longitude').value.toString() + '&lat=' + document.getElementById('latitude').value.toString(), loadSelectOneResponse)">Query</button> <br>
+
+
+        <br>
+        <hr>
+
+        <!-- button to select all database entries  via the '/selectall' route and return them  using the makerequest function ( initialised below)-->
+        <p> <button onclick="makeRequest('./selectall', loadSelectAllResponse)">Select All</button></p>
+        <h3>Select All</h3>
+
+        <p>
+            <hr>
+
+            <p> <button id='btnChennai'>Zoom</button> </p>
+            <h3>Zoom to Central Chennai</h3>
+            <hr>
+            <!-- div to write outputs -->
+            <div id="db_response"></div>
+    </div>
+
+
+
+    <script>
+        /**
+         * This function makes a request for JSON over HTTP, pass resulting text to a callback function when ready
+         */
+        function makeRequest(url, callback) {
+
+            //initialise the XMLHttpRequest object
+            var httpRequest = new XMLHttpRequest();
+
+            //set an event listener for when the HTTP state changes
+            httpRequest.onreadystatechange = function() {
+
+                //if it works, parse the JSON and pass to the callback
+                //a successful HTTP request returns a state of DONE and a status of 200
+                if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+                    callback(JSON.parse(httpRequest.responseText));
+                }
+            };
+
+            //prepare and send the request
+            httpRequest.open('GET', url);
+            httpRequest.send();
+        }
+
+        /**
+         * this function loads the response from the '/Selectall' route. This function adds all submitted user points to the leaflet map 
+         * as markers and adds a popup with their coordinates, description and date/time submitted
+         */
+        function loadSelectAllResponse(data) {
+
+            console.log(data);
+
+            // lazily load data into html and dump onto page
+            let output = "";
+            for (let i = 0; i < data.length; i++) {
+                L.marker([parseFloat(data[i].lat), parseFloat(data[i].lng)]).addTo(mymap).bindPopup('<p>' + 'coordinates:' + data[i].lat + ', ' + data[i].lng + '<br />' + 'description:' + data[i].description + '<br/>' + 'time submitted:' + data[i].time_submitted + ':<br/>' + '</p>').openPopup();
+
+                output += '<p>' + data[i].lat + ', ' + data[i].lng + '</p>';
+            }
+        }
+
+        /**
+         * this function loads the response from the '/insert' route after VGI data is submitted
+         */
+        function loadInsertResponse(data) {
+
+
+            //extracting the geojson from the data returned from input
+            bboxformap = data.geojson;
+
+            //plotting a bounding box around the submitted user point
+            boundingbox = L.geoJson(bboxformap, {
+                style: {
+                    weight: 4,
+                    opacity: 1,
+                    color: '#e60000',
+                }
+            }).addTo(mymap);
+
+            //getting the sw and ne coordinates of the bounding box to plot the image
+            var sw = boundingbox.getBounds().getSouthWest();
+            var ne = boundingbox.getBounds().getNorthEast();
+
+            //using the coordinates to get bounds to use for the image overlay
+            var latlongbounds = L.latLngBounds(sw, ne);
+
+            //assigning  base64 png of flood fill to a variable
+            var base64string = data.image
+
+            var imageoverlay123;
+            //assigning validationlist1 to a variable
+            validationlist1 = data.validationlist;
+
+            //sending the flood history and thank you message to the sidebar
+            document.getElementById('db_response').innerHTML = validationlist1;
+
+            //adding an imageoverlay containing the flood fill image using boundingbox intialised above
+            var imageoverlay123 = L.imageOverlay(String(base64string), latlongbounds);
+            imageoverlay123.setOpacity(0.6);
+
+            //adding it to the map
+            imageoverlay123.addTo(mymap)
+                //adding a popup to the map
+            var popup = L.popup().setContent(validationlist1);
+            boundingbox.bindPopup(popup).openPopup();
+
+            console.log("Success!");
+            //fitting the bounds of the map to the flood fill
+            mymap.fitBounds(latlongbounds);
+
+        };
+
+        /**
+         * getting a response from the select one route
+         */
+        function loadSelectOneResponse(data) {
+
+            //extracting the geojson from the data returned from input
+            bboxformap = data.geojson;
+
+            //plotting a bounding box around the submitted user point
+            boundingbox = L.geoJson(bboxformap, {
+                style: {
+                    weight: 4,
+                    opacity: 1,
+                    color: '#e60000',
+                }
+            }).addTo(mymap);
+
+
+            //getting the sw and ne coordinates of the bounding box to plot the image
+            mymap.fitBounds(boundingbox.getBounds());
+            var sw = boundingbox.getBounds().getSouthWest();
+            var ne = boundingbox.getBounds().getNorthEast();
+            //using the coordinates to get bounds for the image overlay
+            var latlongbounds = L.latLngBounds(sw, ne);
+
+            //assigning  base64 png of flood fill to a variable
+            var base64string = data.image
+
+            //assigning validationlist1 to a variable
+            validationlist1 = data.validationlist;
+            L.marker(data.markerpoint).addTo(mymap);
+
+            //sending the flood history and thank you message to the sidebar
+            document.getElementById('db_response').innerHTML = validationlist1;
+
+            //adding an imageoverlay containing the flood fill image using boundingbox intialised above
+            var imageoverlay123 = L.imageOverlay(String(base64string), latlongbounds);
+            imageoverlay123.setOpacity(0.6);
+
+            //adding it to the map
+            imageoverlay123.addTo(mymap)
+                //adding a popup to the map
+            var popup = L.popup().setContent(validationlist1);
+            boundingbox.bindPopup(popup).openPopup();
+
+            console.log("Success!");
+            //fitting the bounds of the map to the flood fill
+            mymap.fitBounds(latlongbounds);
+
+        }
+    </script>
+
+    <!------------------------------------------------------ initialising the map div ( web map ) ------------------------------------------------------------->
+
+    <div id="mapdiv" class="col-md-12"></div>
+
+
+
+    <script>
+        /** 
+         * calling variables
+         */
+        var mymap; //mymap is the map we are defining
+        var mrkCurrentLocation; //variable for finding current location
+        var ctlAttribute; //variable for control attribution
+        var ctlScale; //variable for scale control
+        var ctlEasybutton; //easy button for sidebar
+        var ctlSidebar; //variable for sidebar 
+        var ctlSearch; //variable for searchbar
+        var ctlLayers; //variable for control layers
+        var objBasemaps; //variable for basemap layers 
+        var lyrOSM; //variable for osm basemap 
+        var lyrWatercolor; ////variable for stamen auto color
+        var lyrTopo; //variable for Open topoMap
+        var lyrImagery; //variable for esri world imagery
+        var lyrOutdoors; //variable for thunderforst outdoors
+        var objOverlays; //variable for overlay layers
+        var bounds1;
+        var boundingbox;
+
+        // Initialising the map variable
+        mymap = L.map('mapdiv', {
+            center: [13.06, 80.23],
+            zoom: 16,
+            zoomControl: false,
+            attributionControl: false
+        });
+        //initialising basemap layers
+        lyrOSM = L.tileLayer.provider('OpenStreetMap.Mapnik');
+        lyrTopo = L.tileLayer.provider('OpenTopoMap');
+
+        mymap.addLayer(lyrOSM); //ading the layers to mymap
+
+        //adding water layer
+        waterLayer = L.geoJson(water, {
+            style: waterStyle
+        }).addTo(mymap);
+
+        //creating a dict for Base Maps
+        objBasemaps = {
+            "Open Street Maps": lyrOSM,
+            "Topo Map": lyrTopo,
+        };
+        //creating a dict for overlay layers
+        objOverlays = {
+            "Water Bodies": waterLayer,
+        };
+        //adding the dicts to the control layers to the layer control panel
+        ctlLayers = L.control.layers(objBasemaps, objOverlays).addTo(mymap);
+
+        //creating a variable for layers created during the leaflet draw plugin
+        var editableLayers = new L.FeatureGroup();
+
+        //adding the draw layer to the map
+        mymap.addLayer(editableLayers);
+
+        //initialising a green icon to be used for user input
+        var greenIcon = new L.Icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+
+        //adding options for the draw tool
+        var options = {
+            position: 'topright',
+            draw: {
+                polyline: false,
+                polygon: false,
+                circle: false,
+                rectangle: false,
+                circlemarker: false,
+                marker: {
+                    icon: greenIcon
+                }
+            },
+            //setting editable layers to true 
+            edit: {
+                featureGroup: editableLayers, //REQUIRED!!
+                remove: true
+            }
+        };
+
+        //adding the draw control 
+        var drawControl = new L.Control.Draw(options);
+        mymap.addControl(drawControl);
+
+        //this function takes the lat and long of a drawn marker once it is created and adds it to the input tab in the sidebar
+        //this is done using an event handler that will be called when a marker is added
+        mymap.on('draw:created', function(e) {
+            var type = e.layerType,
+                layer = e.layer;
+            var lat = layer.getLatLng().lat;
+            var lng = layer.getLatLng().lng;
+
+            //if the type is marker, which it is, adding lat and long to the input tab
+            if (type === 'marker') {
+                document.getElementById('insert_latitude').value = lat;
+                document.getElementById('insert_longitude').value = lng;
+                //binding a popup for the user
+                layer.bindPopup('Click on insert in the left pane to submit the point!').openPopup();
+            }
+            //adding the layer to the map
+            editableLayers.addLayer(layer);
+        });
+
+        //setting style for water layer
+        var waterStyle = {
+            "color": "#0087ff",
+            "weight": 2,
+            "opacity": 0.65
+        };
+
+        //adding side bar control to the map
+        ctlSidebar = L.control.sidebar('side-bar').addTo(mymap);
+
+        //adding button for the sidebar
+        ctlEasybutton = L.easyButton('glyphicon-transfer', function() {
+            ctlSidebar.toggle();
+        }).addTo(mymap);
+
+        //adding search functionality
+        ctlSearch = L.Control.openCageSearch({
+            key: '3c38d15e76c02545181b07d3f8cfccf0',
+            limit: 10
+        }).addTo(mymap);
+
+        //adding attribution
+        ctlAttribute = L.control.attribution({
+            position: 'bottomright'
+        }).addTo(mymap);
+        ctlAttribute.addAttribution('OSM');
+        ctlAttribute.addAttribution('&copy;<br> Student ID: 10853401 <br> MSc Geographical Information Science Dissertation <br> University of Manchester');
+
+        //adding scalebar
+        ctlScale = L.control.scale({
+            position: 'bottomleft',
+            metric: false,
+            maxWidth: 200
+        }).addTo(mymap);
+
+        //adding locator button
+        var lc = L.control.locate({
+            position: 'topleft',
+            strings: {
+                title: "Show me where I am, yo!"
+            }
+        }).addTo(mymap);
+
+        //adding locate button to the sidebar
+        $("#btnLocate").click(function() {
+            mymap.locate();
+        });
+
+        //adding a function to zoom to chennai
+        $("#btnChennai").click(function() {
+            mymap.setView([13.06, 80.23], 17);
+
+        })
+
+        //on finding the users location adding a circle to the map around the users location
+        mymap.on('locationfound', function(e) {
+            console.log(e);
+            if (mrkCurrentLocation) {
+                mrkCurrentLocation.remove();
+            }
+            mrkCurrentLocation = L.circle(e.latlng, {
+                radius: e.accuracy / 2
+            }).addTo(mymap);
+            mymap.setView(e.latlng, 14);
+        });
+        //if user denies to give permission provide alert
+        mymap.on('locationerror', function(e) {
+            console.log(e);
+            alert("Location was not found");
+        })
+    </script>
+</body>
+
+</html>
