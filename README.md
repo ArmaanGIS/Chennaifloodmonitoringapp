@@ -10,3 +10,5 @@ Alternatively, you can download the rar files titled 10853401-part 1 and 1085340
 
 install all the requirements in requirements.txt open the folder in an IDE or in the terminal Type 'flask run' to run the application
 
+working link: https://cagfloodmonitoringwebapp.pythonanywhere.com/maphttps://cagfloodmonitoringwebapp.pythonanywhere.com/
+
